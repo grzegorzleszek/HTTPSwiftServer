@@ -19,7 +19,7 @@ class HTTPServer: NSObject {
             var reuse = true
             let fileDescriptor = CFSocketGetNative(socket)
             if setsockopt(fileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(sizeof(Int32))) != 0 {
-                println("Unable to set socket options")
+                print("Unable to set socket options")
                 return
             }
             var address: sockaddr_in = prepareSockaddr()
@@ -28,13 +28,13 @@ class HTTPServer: NSObject {
                 return CFSocketSetAddress(socket, socketAddressData) == CFSocketError.Success
             }
             if bindingSocketSuccess == false {
-                println("Unable to bind socket to address.")
+                print("Unable to bind socket to address.")
                 return
             }
             prepareListeningHandle(fileDescriptor)
-            println("Server started.")
+            print("Server started at localhost:\(HTTP_SERVER_PORT)")
         } else {
-            println("Unable to create socket.")
+            print("Unable to create socket.")
         }
     }
     
@@ -42,9 +42,9 @@ class HTTPServer: NSObject {
         if let userInfo = notification.userInfo as? [String : AnyObject] {
             let incomingFileHandle = userInfo[NSFileHandleNotificationFileHandleItem] as? NSFileHandle
             if let data = incomingFileHandle?.availableData {
-                let incomingRequest = CFHTTPMessageCreateEmpty(kCFAllocatorDefault, 1).takeUnretainedValue() as CFHTTPMessageRef
-                if CFHTTPMessageAppendBytes(incomingRequest, UnsafePointer<UInt8>(data.bytes), data.length) == 1 {
-                    if CFHTTPMessageIsHeaderComplete(incomingRequest) == 1 {
+                let incomingRequest = CFHTTPMessageCreateEmpty(kCFAllocatorDefault, true).takeUnretainedValue() as CFHTTPMessageRef
+                if CFHTTPMessageAppendBytes(incomingRequest, UnsafePointer<UInt8>(data.bytes), data.length) == true {
+                    if CFHTTPMessageIsHeaderComplete(incomingRequest) == true {
                         let handler = HTTPResponseHandler.handler(incomingRequest, fileHandle: incomingFileHandle!, server: self)
                         handler.startResponse()
                     }
