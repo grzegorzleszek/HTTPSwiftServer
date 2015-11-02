@@ -5,6 +5,6 @@ Based on Cocoa with Love article:
 http://www.cocoawithlove.com/2009/07/simple-extensible-http-server-in-cocoa.html
 
 This is a swift version of HTTP Server that is doing following:
-1) Opening a socket for listening
-2) Receiving incoming connections
-3) Handling response (returning 501)
+- Opening a socket for listening
+- Receiving incoming connections
+- Handling response (returning 501)
