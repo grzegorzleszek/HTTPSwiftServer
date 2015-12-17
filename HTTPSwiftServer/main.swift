@@ -8,5 +8,10 @@
 
 import Foundation
 
-HTTPServer.sharedInstance.start()
+struct SomeRespondableDelegate: Respondable {
+}
+
+let server = HTTPServer.sharedInstance
+server.delegate = SomeRespondableDelegate()
+server.start()
 NSRunLoop.mainRunLoop().run()

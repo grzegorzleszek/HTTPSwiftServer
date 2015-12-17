@@ -13,6 +13,7 @@ let HTTP_SERVER_PORT: UInt16 = 8080
 class HTTPServer: NSObject {
     static let sharedInstance = HTTPServer()
     var listeningHandle: NSFileHandle? = nil
+    var delegate: Respondable?
     
     func start() {
         if let socket = CFSocketCreate(kCFAllocatorDefault, PF_INET, SOCK_STREAM, IPPROTO_TCP, 0, nil, nil) {
@@ -38,7 +39,9 @@ class HTTPServer: NSObject {
         }
     }
     
-    func receiveIncomingConnectionNotification(notification: NSNotification) {        
+    func receiveIncomingConnectionNotification(notification: NSNotification) {
+        guard let delegate = self.delegate
+            else { return }
         if let userInfo = notification.userInfo as? [String : AnyObject] {
             let incomingFileHandle = userInfo[NSFileHandleNotificationFileHandleItem] as? NSFileHandle
             if let data = incomingFileHandle?.availableData {
@@ -46,7 +49,7 @@ class HTTPServer: NSObject {
                 if CFHTTPMessageAppendBytes(incomingRequest, UnsafePointer<UInt8>(data.bytes), data.length) == true {
                     if CFHTTPMessageIsHeaderComplete(incomingRequest) == true {
                         let handler = HTTPResponseHandler.handler(incomingRequest, fileHandle: incomingFileHandle!, server: self)
-                        handler.startResponse()
+                        handler.startResponse(delegate)
                     }
                 }
             }

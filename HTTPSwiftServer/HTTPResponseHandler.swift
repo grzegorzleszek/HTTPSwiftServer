@@ -21,13 +21,14 @@ class HTTPResponseHandler: NSObject {
         return handler
     }
     
-    func startResponse() {
-        let response = CFHTTPMessageCreateResponse(kCFAllocatorDefault, 501, nil, kCFHTTPVersion1_1)
+    func startResponse(delegate: Respondable) {
+        let identifier = delegate.endpointMapping()[requestURL.path!]
+        let respond :(String, CFIndex) = delegate.handler(identifier, method: method)
+        let body = respond.0
+        let statusCode = respond.1
+        print("This was \(method) for \(requestURL)")
+        let response = CFHTTPMessageCreateResponse(kCFAllocatorDefault, statusCode, nil, kCFHTTPVersion1_1)
         CFHTTPMessageSetHeaderFieldValue(response.takeUnretainedValue(), "Content-Type", "text/html")
-        let body =
-        "<html><head><title>501 - Not Implemented</title></head>" +
-            "<body><h1>501 - Not Implemented</h1>" +
-        "<p>It was \(method) request for \(requestURL)</p></body></html>"
         CFHTTPMessageSetBody(response.takeUnretainedValue(), body.dataUsingEncoding(NSUTF8StringEncoding)!)
         let headerData = CFHTTPMessageCopySerializedMessage(response.takeUnretainedValue())
         if let fileHandler = fileHandle {
