@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Grzegorz.Leszek. All rights reserved.
 //
 
-import Cocoa
+import Foundation
 
 class HTTPResponseHandler: NSObject {
     var fileHandle: NSFileHandle? = nil
