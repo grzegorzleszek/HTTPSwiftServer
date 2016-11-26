@@ -8,7 +8,36 @@
 
 import Foundation
 
+protocol RouterType {
+    func handler(_ path: String, method: String, body: Data?) -> (String, Int)
+}
+
+extension RouterType {
+    /// Handler that is fired on each dispatched message
+    ///
+    /// - Returns: tuple - body message and statusCode.
+    func handler(_ path: String, method: String, body: Data?) -> (String, Int) {
+        switch path {
+        case "/":
+            return ("HTTP Swift Server is up and running", 200)
+        case _ where path.contains("/user"):
+            return ("HTTP Swift Server contains user", 200)
+        default:
+            return ("501 - Not Implemented", 501)
+        }
+    }
+}
+
 class HTTPResponseHandler: NSObject {
+    
+    enum Keys {
+        static let contentType = "Content-Type"
+    }
+    
+    enum Constants {
+        static let text = "text/html"
+    }
+    
     var fileHandle: FileHandle?
     var requestURL: URL!
     var method = ""
@@ -24,15 +53,14 @@ class HTTPResponseHandler: NSObject {
         return handler
     }
     
-    func startResponse(_ delegate: Respondable) {
-        let identifier = delegate.endpointMapping()[requestURL.path]
-        let respond :(String, CFIndex) = delegate.handler(identifier, method: method, body: body)
+    func startResponse(_ delegate: RouterType) {
+        let respond :(String, CFIndex) = delegate.handler(requestURL.path, method: method, body: body)
         let responseBody = respond.0
         let statusCode = respond.1
         let bodyString = body == nil ? "" : NSString(data: body!, encoding: String.Encoding.utf8.rawValue)!
         print("This was \(method) for \(requestURL):\n\(bodyString)")
         let response = CFHTTPMessageCreateResponse(kCFAllocatorDefault, statusCode, nil, kCFHTTPVersion1_1)
-        CFHTTPMessageSetHeaderFieldValue(response.takeUnretainedValue(), "Content-Type" as CFString, "text/html" as CFString?)
+        CFHTTPMessageSetHeaderFieldValue(response.takeUnretainedValue(), Keys.contentType as CFString, Constants.text as CFString?)
         CFHTTPMessageSetBody(response.takeUnretainedValue(), responseBody.data(using: String.Encoding.utf8)! as CFData)
         let headerData = CFHTTPMessageCopySerializedMessage(response.takeUnretainedValue())
         if let fileHandler = fileHandle {

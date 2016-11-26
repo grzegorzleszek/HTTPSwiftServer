@@ -8,8 +8,7 @@
 
 import Foundation
 
-struct SomeRespondableDelegate: Respondable {
-}
+struct SomeRespondableDelegate: RouterType {}
 
 let server = HTTPServer.sharedInstance
 server.delegate = SomeRespondableDelegate()

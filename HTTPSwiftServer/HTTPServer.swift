@@ -13,7 +13,7 @@ let HTTP_SERVER_PORT: UInt16 = 8080
 class HTTPServer: NSObject {
     static let sharedInstance = HTTPServer()
     var listeningHandle: FileHandle? = nil
-    var delegate: Respondable?
+    var delegate: RouterType?
     
     func start() {
         if let socket = CFSocketCreate(kCFAllocatorDefault, PF_INET, SOCK_STREAM, IPPROTO_TCP, 0, nil, nil) {
