@@ -9,7 +9,7 @@
 import Foundation
 
 protocol Respondable {
-    func handler(identifier: String?, method: String, body: NSData?) -> (String, CFIndex)
+    func handler(_ identifier: String?, method: String, body: Data?) -> (String, CFIndex)
     func endpointMapping() -> Dictionary<String, String>
 }
 
@@ -17,7 +17,7 @@ extension Respondable {
     /// Handler that is fired on each dispatched message that was registered by `endpointMapping` method
     ///
     /// - Returns: tuple - body message and statusCode.
-    func handler(identifier: String?, method: String, body: NSData?) -> (String, Int) {
+    func handler(_ identifier: String?, method: String, body: Data?) -> (String, Int) {
         if identifier == "defaultIdentifier" {
             return ("HTTP Swift Server is up and running", 200)
         }
