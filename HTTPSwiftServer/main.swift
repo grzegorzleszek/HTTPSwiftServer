@@ -14,23 +14,10 @@ protocol RouterType {
     func handler(_ path: String, method: String, body: Data?) -> (String, Int)
 }
 
-extension RouterType {
-    func handler(_ path: String, method: String, body: Data?) -> (String, Int) {
-        switch path {
-        case "/":
-            return ("HTTP Swift Server is up and running", 200)
-        case _ where path.contains("/user"):
-            return ("HTTP Swift Server contains user", 200)
-        default:
-            return ("501 - Not Implemented", 501)
-        }
-    }
-}
-
 class HTTPServer: NSObject {
     static let sharedInstance = HTTPServer()
     var listeningHandle: FileHandle?
-    var delegate: RouterType?
+    var router: RouterType?
     
     func start() {
         if let socket = CFSocketCreate(kCFAllocatorDefault, PF_INET, SOCK_STREAM, IPPROTO_TCP, 0, nil, nil) {
@@ -60,7 +47,7 @@ class HTTPServer: NSObject {
     }
     
     func receiveIncomingConnectionNotification(_ notification: Notification) {
-        guard let delegate = self.delegate
+        guard let router = self.router
             else { return }
         if let userInfo = notification.userInfo as? [String : AnyObject] {
             let incomingFileHandle = userInfo[NSFileHandleNotificationFileHandleItem] as? FileHandle
@@ -69,7 +56,7 @@ class HTTPServer: NSObject {
                 if CFHTTPMessageAppendBytes(incomingRequest, (data as NSData).bytes.bindMemory(to: UInt8.self, capacity: data.count), data.count) == true {
                     if CFHTTPMessageIsHeaderComplete(incomingRequest) == true {
                         let handler = HTTPResponseHandler.handler(incomingRequest, fileHandle: incomingFileHandle!, server: self)
-                        handler.startResponse(delegate)
+                        handler.startResponse(router)
                     }
                 }
             }
@@ -134,9 +121,20 @@ class HTTPResponseHandler: NSObject {
     }
 }
 
-struct SomeRespondableDelegate: RouterType {}
+struct SimpleRouter: RouterType {
+    func handler(_ path: String, method: String, body: Data?) -> (String, Int) {
+        switch path {
+        case "/":
+            return ("HTTP Swift Server is up and running", 200)
+        case _ where path.contains("/user"):
+            return ("HTTP Swift Server contains user", 200)
+        default:
+            return ("501 - Not Implemented", 501)
+        }
+    }
+}
 
 let server = HTTPServer.sharedInstance
-server.delegate = SomeRespondableDelegate()
+server.router = SimpleRouter()
 server.start()
 RunLoop.main.run()
