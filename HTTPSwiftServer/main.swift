@@ -99,10 +99,9 @@ class HTTPResponseHandler: NSObject {
     class func handler(_ request: CFHTTPMessage, fileHandle: FileHandle, server: HTTPServer) -> HTTPResponseHandler {
         let handler = HTTPResponseHandler()
         handler.fileHandle = fileHandle
-        handler.requestURL = CFHTTPMessageCopyRequestURL(request)!.takeUnretainedValue() as URL
-        handler.method = CFHTTPMessageCopyRequestMethod(request)!.takeUnretainedValue() as String
-        let bodyCFData = CFHTTPMessageCopyBody(request)!.takeRetainedValue()
-        handler.body = bodyCFData as Data
+        handler.requestURL = CFHTTPMessageCopyRequestURL(request)?.takeUnretainedValue() as URL?
+        handler.method = CFHTTPMessageCopyRequestMethod(request)?.takeUnretainedValue() as String? ?? "GET"
+        handler.body = CFHTTPMessageCopyBody(request)?.takeRetainedValue() as Data?
         return handler
     }
     
