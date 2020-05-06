@@ -46,6 +46,7 @@ class HTTPServer: NSObject {
         }
     }
     
+    @objc
     func receiveIncomingConnectionNotification(_ notification: Notification) {
         guard let router = self.router
             else { return }
@@ -110,7 +111,7 @@ class HTTPResponseHandler: NSObject {
         let responseBody = respond.0
         let statusCode = respond.1
         let bodyString = body == nil ? "" : NSString(data: body!, encoding: String.Encoding.utf8.rawValue)!
-        print("This was \(method) for \(requestURL):\n\(bodyString)")
+        print("This was \(method) for \(requestURL.description):\n\(bodyString)")
         let response = CFHTTPMessageCreateResponse(kCFAllocatorDefault, statusCode, nil, kCFHTTPVersion1_1)
         CFHTTPMessageSetHeaderFieldValue(response.takeUnretainedValue(), Keys.contentType as CFString, Constants.text as CFString?)
         CFHTTPMessageSetBody(response.takeUnretainedValue(), responseBody.data(using: String.Encoding.utf8)! as CFData)
